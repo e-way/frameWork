@@ -1,21 +1,16 @@
-﻿using SqlserverAccess.Common;
-using SqlserverAccess.Model;
+﻿using SqlserverAccess.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SqlserverAccess.Client
 {
     public class SqlClient
     {
-        public static DataTable ExecuteStoredProcedure(string procedureName)
+        public static List<ManagerEmployee> ExecuteStoredProcedure(string procedureName)
         {
-            DataTable tableValue;
+            List<ManagerEmployee> managerEmployees = new List<ManagerEmployee>();
             var connectString = GetConnectStr();
             using (SqlConnection connection = new SqlConnection(connectString))
             {
@@ -33,35 +28,32 @@ namespace SqlserverAccess.Client
                     var rowAffacted = command.ExecuteNonQuery();
                     Console.Write(rowAffacted);
 
-                    IDataReader reader;
-                    using (reader = command.ExecuteReader())
+                    
+                    using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            var data = reader.GetSchemaTable();
-                            Console.WriteLine(data.ToList<ManagerEmployee>().ToString());
-                            Print(data.ToList<ManagerEmployee>());
+                            managerEmployees.Add(GetManagerEmployee(reader));
                         }
-                        tableValue = reader.GetSchemaTable().Clone();
                     }
                 }
             }
-            return tableValue;
+            return managerEmployees;
         }
 
-        //public static IEnumerable<T> ExecuteObject<T>(string procedureName)
-        //{
-        //    List<T> items = new List<T>();
-        //    var data = ExecuteStoredProcedure(procedureName); 
-        //    foreach (var row in data.Rows)
-        //    {
-        //        T item = (T)Activator.CreateInstance(typeof(T), row);
-        //        items.Add(item);
-        //    }
-        //    return items;
-        //}
-
-      
+        private static ManagerEmployee GetManagerEmployee(IDataRecord record)
+        {
+            return new ManagerEmployee
+            {
+                RecursionLevel = Convert.ToInt32(record["RecursionLevel"]),
+                OrganizationNode = record["OrganizationNode"] as string,
+                ManagerFirstName = record["ManagerFirstName"] as string,
+                ManagerLastName = record["ManagerLastName"] as string,
+                BusinessEntityID = Convert.ToInt32(record["BusinessEntityID"]),
+                FirstName = record["FirstName"] as string,
+                LastName = record["LastName"] as string
+            };
+        }
 
         private static string GetConnectStr()
         {
@@ -74,14 +66,6 @@ namespace SqlserverAccess.Client
             };
 
             return connectionStringBuilder.ConnectionString;
-        }
-
-        private static void Print(List<ManagerEmployee>managerEmployees)
-        {
-            foreach (var managerEmployee in managerEmployees)
-            {
-                Console.WriteLine(managerEmployee.ToString());
-            }
         }
     }
 }

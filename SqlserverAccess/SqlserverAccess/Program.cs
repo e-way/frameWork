@@ -17,14 +17,18 @@ namespace SqlserverAccess
         {
             var procedureName = "[dbo].[uspGetManagerEmployees]";
             var parameter = new SqlParameter("@BusinessEntityID", SqlDbType.Int);
-            //SqlClient.ExecuteStoredProcedure(procedureName);
-            //var data = SqlClient.ExecuteObject<ManagerEmployee>(procedureName);
             var data = SqlClient.ExecuteStoredProcedure(procedureName);
-           // var tableResult = data.ToList<ManagerEmployee>();
-            Console.Write("");
+  
+            Print(data);
         }
 
+        private static void Print(List<ManagerEmployee> managerEmployees)
+        {
+            foreach (var managerEmployee in managerEmployees)
+            {
+                Console.WriteLine(managerEmployee.ToString());
+            }
+        }
 
-       
     }
 }
