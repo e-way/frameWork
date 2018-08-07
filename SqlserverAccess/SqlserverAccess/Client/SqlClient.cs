@@ -30,6 +30,7 @@ namespace SqlserverAccess.Client
                     }
 
                     var rowAffacted = command.ExecuteNonQuery();
+                    //for rows affacted.
                     //Console.Write(rowAffacted);
 
                     using (var reader = command.ExecuteReader())
