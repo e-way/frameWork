@@ -46,13 +46,8 @@ namespace SqlserverAccess.Client
 
         private static T GetEntity<T>(IDataRecord record)
         {
-            var columnNames = record.GetColumnNames();
-            var obj = Initialize<T>(record, record.GetColumnList());
-            return obj; 
-        }
+            var columns = record.GetColumnList();
 
-        private static T Initialize<T>(IDataRecord record, params Column[] columns)
-        {
             var obj = (T)Activator.CreateInstance(typeof(T));
             for (int i = 0; i < columns.Length; i++)
             {
