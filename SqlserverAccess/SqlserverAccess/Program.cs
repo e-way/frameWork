@@ -7,7 +7,7 @@ using System.Data.SqlClient;
 using System.Data;
 using SqlserverAccess.Client;
 using SqlserverAccess.Model;
-using SqlserverAccess.Common;
+using System.Collections;
 
 namespace SqlserverAccess
 {
@@ -16,9 +16,19 @@ namespace SqlserverAccess
         static void Main(string[] args)
         {
             var procedureName = "[dbo].[uspGetManagerEmployees]";
-            var parameter = new SqlParameter("@BusinessEntityID", SqlDbType.Int);
-            var data = SqlClient.ExecuteStoredProcedure(procedureName);
-  
+            var parameter = new Parameter
+            {
+                Name = "@BusinessEntityID",
+                Type = SqlDbType.Int,
+                Value = 3
+            };
+
+            List<Parameter> parameters = new List<Parameter>
+            {
+                parameter
+            };
+
+            var data = SqlClient.ExecuteStoredProcedure<ManagerEmployee>(procedureName, parameters);
             Print(data);
         }
 

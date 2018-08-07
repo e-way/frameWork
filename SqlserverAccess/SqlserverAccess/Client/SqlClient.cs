@@ -1,4 +1,5 @@
-﻿using SqlserverAccess.Model;
+﻿using SqlserverAccess.Common;
+using SqlserverAccess.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,9 +9,9 @@ namespace SqlserverAccess.Client
 {
     public class SqlClient
     {
-        public static List<ManagerEmployee> ExecuteStoredProcedure(string procedureName)
+        public static List<T> ExecuteStoredProcedure<T>(string procedureName, List<Parameter>parameters)
         {
-            List<ManagerEmployee> managerEmployees = new List<ManagerEmployee>();
+            List<T> managerEmployees = new List<T>();
             var connectString = GetConnectStr();
             using (SqlConnection connection = new SqlConnection(connectString))
             {
@@ -20,20 +21,22 @@ namespace SqlserverAccess.Client
                 })
                 {
                     connection.Open();
-
-                    var returned = command.Parameters.Add(new SqlParameter("@BusinessEntityID", SqlDbType.Int)
+                    foreach (var parameter in parameters)
                     {
-                        Value = 3
-                    });
-                    var rowAffacted = command.ExecuteNonQuery();
-                    Console.Write(rowAffacted);
+                        command.Parameters.Add(new SqlParameter(parameter.Name, parameter.Type)
+                        {
+                            Value = parameter.Value
+                        });
+                    }
 
-                    
+                    var rowAffacted = command.ExecuteNonQuery();
+                    //Console.Write(rowAffacted);
+
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            managerEmployees.Add(GetManagerEmployee(reader));
+                            managerEmployees.Add(GetEntity<T>(reader));
                         }
                     }
                 }
@@ -41,18 +44,32 @@ namespace SqlserverAccess.Client
             return managerEmployees;
         }
 
-        private static ManagerEmployee GetManagerEmployee(IDataRecord record)
+        private static T GetEntity<T>(IDataRecord record)
         {
-            return new ManagerEmployee
+            var columnNames = record.GetColumnNames();
+            var obj = Initialize<T>(record, record.GetColumnList());
+            return obj; 
+        }
+
+        private static T Initialize<T>(IDataRecord record, params Column[] columns)
+        {
+            var obj = (T)Activator.CreateInstance(typeof(T));
+            for (int i = 0; i < columns.Length; i++)
             {
-                RecursionLevel = Convert.ToInt32(record["RecursionLevel"]),
-                OrganizationNode = record["OrganizationNode"] as string,
-                ManagerFirstName = record["ManagerFirstName"] as string,
-                ManagerLastName = record["ManagerLastName"] as string,
-                BusinessEntityID = Convert.ToInt32(record["BusinessEntityID"]),
-                FirstName = record["FirstName"] as string,
-                LastName = record["LastName"] as string
-            };
+                var name = columns[i].Name;
+                var type = columns[i].Type;
+                var value = Convert.ChangeType(record[name], type);
+      
+                var tp = obj.GetType();
+                foreach (var propInfo in tp.GetProperties())
+                {
+                    if (propInfo.Name == name)
+                    {
+                        propInfo.SetValue(obj, value, null);
+                    }
+                }
+            }
+            return obj;
         }
 
         private static string GetConnectStr()

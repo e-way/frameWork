@@ -17,10 +17,27 @@ namespace SqlserverAccess.Model
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
+        public ManagerEmployee()
+        {
+
+        }
+
+        public ManagerEmployee(int recursionLevel, string organizationNode, string managerFirstName, string managerLastName, int businessEntityID, string firstName, string lastName)
+        {
+            RecursionLevel = recursionLevel;
+            OrganizationNode = organizationNode;
+            ManagerFirstName = managerFirstName;
+            ManagerLastName = managerLastName;
+            BusinessEntityID = businessEntityID;
+            FirstName = firstName;
+            LastName = lastName;
+        }
+
         public override string ToString()
         {
             return string.Format($"{this.RecursionLevel} {this.OrganizationNode} {this.ManagerFirstName} {this.ManagerLastName} {this.BusinessEntityID} {this.FirstName} {this.LastName}");
         }
 
+       
     }
 }
