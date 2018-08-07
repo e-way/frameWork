@@ -43,7 +43,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\SqlClient.cs" />
-    <Compile Include="Common\Extensions.cs" />
     <Compile Include="Model\ManagerEmployee.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
